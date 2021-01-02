@@ -51,5 +51,19 @@ test_int = 21");
 [test_section]
 test_boolean = invalid"));
         }
+
+        [Test]
+        public void DumpWorks()
+        {
+            var cfg = new TestConfig();
+            cfg.LoadFromString(@"// asdf
+[test_section]
+test_int = 32");
+            Assert.AreEqual(32, cfg.TestSection.TestInt);
+            cfg.TestSection.TestInt = 33;
+            Assert.AreEqual(@"// asdf
+[test_section]
+test_int = 33", cfg.DumpToString(false));
+        }
     }
 }

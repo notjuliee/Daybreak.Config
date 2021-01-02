@@ -29,8 +29,10 @@ namespace Daybreak.Config.Sandbox
                 Console.WriteLine($"Parse Error: {e}");
             }
 
-            Console.WriteLine($"FooBar = {cfg.FooBar}");
-            Console.WriteLine($"BazConfig.MakeBugs = {cfg.BazConfig.MakeBugs}");
+            //Console.WriteLine($"FooBar = {cfg.FooBar}");
+            //Console.WriteLine($"BazConfig.MakeBugs = {cfg.BazConfig.MakeBugs}");
+            
+            Console.WriteLine(cfg.DumpToString());
         }
     }
 }

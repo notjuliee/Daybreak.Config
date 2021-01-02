@@ -21,6 +21,11 @@ namespace Daybreak.Config
             return _converters[t.GetHashCode()].Convert(value);
         }
 
+        internal static string ConvertFrom(Type t, object value)
+        {
+            return _converters[t.GetHashCode()].UnConvert(value);
+        }
+
         private class StringConverter : IConverter
         {
             public object Convert(string value)

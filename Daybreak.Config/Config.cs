@@ -58,6 +58,11 @@ namespace Daybreak.Config
             return Parser.ParseConfig(this, content);
         }
 
+        public string DumpToString(bool addMissing = false)
+        {
+            return Parser.DumpConfig(this, addMissing);
+        }
+
         internal string Config;
         internal List<Parser.ConfigField> _fields;
     }

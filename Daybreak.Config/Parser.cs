@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Humanizer;
 
 namespace Daybreak.Config
@@ -232,6 +234,8 @@ namespace Daybreak.Config
                             stringBuf.Add(t.Config[i]);
                             i++;
                         }
+
+                        i++;
                     }
                     else
                     {
@@ -243,14 +247,15 @@ namespace Daybreak.Config
                     }
 
 
-                    currentField.Length = stringBuf.Count;
+                    currentField.Length = i - currentField.Position;
 
                     var fieldVal = new string(stringBuf.ToArray());
                     object val = null;
                     try
                     {
                         val = Conversion.ConvertTo(currentField.FieldInfo.FieldType, fieldVal);
-                        if (currentField.Validators.Any(validator => !validator.Validate(val, currentField.FieldInfo.FieldType)))
+                        if (currentField.Validators.Any(validator =>
+                            !validator.Validate(val, currentField.FieldInfo.FieldType)))
                         {
                             throw new Exceptions.InternalInvalidValueException(val.GetType(), $"{val}");
                         }
@@ -295,6 +300,47 @@ namespace Daybreak.Config
             }
 
             return true;
+        }
+
+        private static void AddField<T>(ref StringBuilder builder, T obj, string doc, ConfigField field, ref int i)
+        {
+            if (field.IsSection)
+            {
+                foreach (var ifield in field.SubFields)
+                {
+                    AddField(ref builder, ifield.FieldInfo.GetValue(obj), doc, ifield, ref i);
+                }
+            }
+            else
+            {
+                if (field.Position < 0) return;
+                builder.Append(doc.Substring(i, field.Position - i));
+                i = field.Position + field.Length;
+                if (field.FieldInfo.FieldType == typeof(string))
+                {
+                    builder.Append('"');
+                }
+
+                builder.Append(Conversion.ConvertFrom(field.FieldInfo.FieldType, obj));
+
+                if (field.FieldInfo.FieldType == typeof(string))
+                {
+                    builder.Append('"');
+                }
+            }
+        }
+
+        public static string DumpConfig<T>(T config, bool writeMissing = false) where T : BaseConfig
+        {
+            var i = 0;
+            var doc = new StringBuilder();
+            foreach (var field in config._fields)
+            {
+                AddField(ref doc, field.FieldInfo.GetValue(config), config.Config, field, ref i);
+            }
+            doc.Append(config.Config.Substring(i, config.Config.Length - i));
+
+            return doc.ToString();
         }
     }
 }
